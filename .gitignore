@@ -150,7 +150,6 @@ npm-debug.log*
 .env
 
 # Hardhat
-artifacts/
 cache/
 *.dbg.json
 
