@@ -11,12 +11,5 @@
       "src": "/(.*)",
       "dest": "src/index.js"
     }
-  ],
-  "files": [
-    "artifacts/**",
-    "src/**",
-    "contracts/**",
-    "package.json",
-    "package-lock.json"
   ]
 }
