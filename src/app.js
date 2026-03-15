@@ -4,6 +4,17 @@ import cookieParser from "cookie-parser"
 
 const app = express()
 
+app.get("/", (req, res) => {
+  res.status(200).json({
+    message: "Mess Management System Backend API",
+    status: "running",
+    endpoints: {
+      health: "/api/health",
+      api: "/api/v1"
+    }
+  });
+});
+
 app.get("/api/health", (req, res) => {
   res.status(200).json({
     status: "ok",
@@ -45,6 +56,14 @@ app.use("/api/v1/feedback", feedbackRouter)
 app.use("/api/v1/voting", votingRouter)
 app.use("/api/v1/token", tokenRouter)
 
-// http://localhost:8000/api/v1/student/register
+// 404 handler for undefined routes
+app.use((req, res) => {
+  res.status(404).json({
+    status: "error",
+    message: "Endpoint not found",
+    path: req.path,
+    method: req.method
+  });
+});
 
 export { app }
