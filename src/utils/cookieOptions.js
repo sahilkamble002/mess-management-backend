@@ -24,10 +24,10 @@ const getCookieOptions = () => {
       ? "none"
       : "lax";
 
-  const secure =
-    normalizeBoolean(process.env.COOKIE_SECURE) ??
-    sameSite === "none" ||
-    process.env.NODE_ENV === "production";
+  const configuredSecure = normalizeBoolean(process.env.COOKIE_SECURE);
+  const secure = configuredSecure !== undefined
+    ? configuredSecure
+    : sameSite === "none" || process.env.NODE_ENV === "production";
 
   return {
     httpOnly: true,
