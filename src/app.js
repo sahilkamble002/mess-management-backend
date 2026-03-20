@@ -1,6 +1,7 @@
 import express from "express"
 import cors from "cors"
 import cookieParser from "cookie-parser"
+import { errorHandler } from "./middlewares/error.middleware.js"
 
 const app = express()
 const corsOrigin = process.env.CORS_ORIGIN?.trim()
@@ -70,5 +71,7 @@ app.use((req, res) => {
     method: req.method
   });
 });
+
+app.use(errorHandler)
 
 export { app }

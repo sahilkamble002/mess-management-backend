@@ -83,28 +83,38 @@ const registerStudent = asyncHandler( async (req, res) => {
 
     const {name, email, rollno, password, cardno, discipline, regmess } = req.body
 
+    const requiredFields = [name, email, rollno, password, cardno, discipline, regmess]
+
     if (
-        [name, email, rollno, password, cardno, discipline, regmess].some((field) => field?.trim() === "")
+        requiredFields.some((field) => field === undefined || field === null || String(field).trim() === "")
     ) {
         throw new ApiError(400, "All fields are required")
     }
 
+    const normalizedEmail = email.toLowerCase().trim()
+    const normalizedRollNo = rollno.toLowerCase().trim()
+    const normalizedCardNo = Number(cardno)
+
+    if (!Number.isFinite(normalizedCardNo)) {
+        throw new ApiError(400, "Card number must be a valid number")
+    }
+
     const existedStudent = await Student.findOne({
-        $or: [{ rollno }, { email }]
+        $or: [{ rollno: normalizedRollNo }, { email: normalizedEmail }, { cardno: normalizedCardNo }]
     })
 
     if (existedStudent) {
-        throw new ApiError(409, "Student with email or rollno already exists")
+        throw new ApiError(409, "Student with email, rollno, or card number already exists")
     }
    
-    const qrcode = await generateStudentQR(rollno);
+    const qrcode = await generateStudentQR(normalizedRollNo);
 
     const student = await Student.create({
         name,
-        email, 
-        rollno: rollno.toLowerCase(), 
+        email: normalizedEmail, 
+        rollno: normalizedRollNo, 
         password, 
-        cardno, 
+        cardno: normalizedCardNo, 
         discipline, 
         regmess,
         qrcode
@@ -127,7 +137,7 @@ const registerStudent = asyncHandler( async (req, res) => {
     res.cookie("refreshToken", refreshToken, authCookieOptions);
 
     return res.status(201).json(
-        new ApiResponse(201, { student }, "Student registered successfully")
+        new ApiResponse(201, { student: createdStudent, accessToken, refreshToken }, "Student registered successfully")
     );
 
 } )
