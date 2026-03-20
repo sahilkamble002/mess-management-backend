@@ -4,13 +4,25 @@ import { Admin} from "../models/admin.model.js"
 import {uploadOnCloudinary} from "../utils/cloudinary.js"
 import { ApiResponse } from "../utils/ApiResponse.js";
 import { authCookieOptions } from "../utils/cookieOptions.js";
+import { getMissingJwtEnvVars } from "../utils/jwtConfig.js";
 import jwt from "jsonwebtoken"
 import mongoose from "mongoose";
 
 
 const generateAccessAndRefereshTokens = async(userId) =>{
     try {
+        const missingJwtEnvVars = getMissingJwtEnvVars()
+
+        if (missingJwtEnvVars.length > 0) {
+            throw new ApiError(500, `Missing JWT environment variables: ${missingJwtEnvVars.join(", ")}`)
+        }
+
         const admin = await Admin.findById(userId)
+
+        if (!admin) {
+            throw new ApiError(404, "Admin not found while generating tokens")
+        }
+
         const accessToken = admin.generateAccessToken()
         const refreshToken = admin.generateRefreshToken()
 
@@ -21,7 +33,7 @@ const generateAccessAndRefereshTokens = async(userId) =>{
 
 
     } catch (error) {
-        throw new ApiError(500, "Something went wrong while generating referesh and access token")
+        throw new ApiError(error?.statusCode || 500, error?.message || "Something went wrong while generating referesh and access token")
     }
 }
 

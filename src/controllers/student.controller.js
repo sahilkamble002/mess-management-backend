@@ -5,13 +5,25 @@ import {uploadOnCloudinary} from "../utils/cloudinary.js"
 import { ApiResponse } from "../utils/ApiResponse.js";
 import {generateStudentQR} from "../utils/generateQR.js";
 import { authCookieOptions } from "../utils/cookieOptions.js";
+import { getMissingJwtEnvVars } from "../utils/jwtConfig.js";
 import jwt from "jsonwebtoken"
 import mongoose from "mongoose";
 
 
 const generateAccessAndRefreshTokens = async(userId) =>{
     try {
+        const missingJwtEnvVars = getMissingJwtEnvVars()
+
+        if (missingJwtEnvVars.length > 0) {
+            throw new ApiError(500, `Missing JWT environment variables: ${missingJwtEnvVars.join(", ")}`)
+        }
+
         const student = await Student.findById(userId)
+
+        if (!student) {
+            throw new ApiError(404, "Student not found while generating tokens")
+        }
+
         const accessToken = student.generateAccessToken()
         const refreshToken = student.generateRefreshToken()
 
@@ -22,7 +34,7 @@ const generateAccessAndRefreshTokens = async(userId) =>{
 
 
     } catch (error) {
-        throw new ApiError(500, "Something went wrong while generating referesh and access token")
+        throw new ApiError(error?.statusCode || 500, error?.message || "Something went wrong while generating referesh and access token")
     }
 }
 
