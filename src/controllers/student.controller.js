@@ -4,6 +4,7 @@ import { Student} from "../models/student.model.js"
 import {uploadOnCloudinary} from "../utils/cloudinary.js"
 import { ApiResponse } from "../utils/ApiResponse.js";
 import {generateStudentQR} from "../utils/generateQR.js";
+import { authCookieOptions } from "../utils/cookieOptions.js";
 import jwt from "jsonwebtoken"
 import mongoose from "mongoose";
 
@@ -49,20 +50,12 @@ const refreshAccessToken = asyncHandler(async (req, res) => {
             
         }
     
-        const options = {
-            httpOnly: true,
-            secure: true
-        }
-    
         const {accessToken, newRefreshToken} = await generateAccessAndRefreshTokens(student._id)
-
-        res.cookie("accessToken", accessToken, { httpOnly: true, secure: true, sameSite: "Strict" });
-        res.cookie("refreshToken", newRefreshToken, { httpOnly: true, secure: true, sameSite: "Strict" });
 
         return res
         .status(200)
-        .cookie("accessToken", accessToken, options)
-        .cookie("refreshToken", newRefreshToken, options)
+        .cookie("accessToken", accessToken, authCookieOptions)
+        .cookie("refreshToken", newRefreshToken, authCookieOptions)
         .json(
             new ApiResponse(
                 200, 
@@ -129,17 +122,9 @@ const registerStudent = asyncHandler( async (req, res) => {
     const { accessToken, refreshToken } = await generateAccessAndRefreshTokens(student._id);
 
     // Set HTTP-only cookies
-    res.cookie("accessToken", accessToken, { 
-        httpOnly: true, 
-        secure: true,  
-        sameSite: "Strict" 
-    });
+    res.cookie("accessToken", accessToken, authCookieOptions);
 
-    res.cookie("refreshToken", refreshToken, { 
-        httpOnly: true, 
-        secure: true,  
-        sameSite: "Strict" 
-    });
+    res.cookie("refreshToken", refreshToken, authCookieOptions);
 
     return res.status(201).json(
         new ApiResponse(201, { student }, "Student registered successfully")
@@ -180,15 +165,10 @@ const loginStudent = asyncHandler(async (req, res) =>{
 
     const loggedInStudent = await Student.findById(student._id).select("-password -refreshToken")
 
-    const options = {
-        httpOnly: true,
-        secure: true
-    }
-
     return res
     .status(200)
-    .cookie("accessToken", accessToken, options)
-    .cookie("refreshToken", refreshToken, options)
+    .cookie("accessToken", accessToken, authCookieOptions)
+    .cookie("refreshToken", refreshToken, authCookieOptions)
     .json(
         new ApiResponse(
             200, 
@@ -214,15 +194,10 @@ const logoutStudent = asyncHandler(async(req, res) => {
         }
     )
 
-    const options = {
-        httpOnly: true,
-        secure: true
-    }
-
     return res
     .status(200)
-    .clearCookie("accessToken", options)
-    .clearCookie("refreshToken", options)
+    .clearCookie("accessToken", authCookieOptions)
+    .clearCookie("refreshToken", authCookieOptions)
     .json(new ApiResponse(200, {}, "Student logged Out"))
 })
 

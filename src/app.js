@@ -3,6 +3,11 @@ import cors from "cors"
 import cookieParser from "cookie-parser"
 
 const app = express()
+const corsOrigin = process.env.CORS_ORIGIN?.trim()
+const allowedOrigins =
+  !corsOrigin || corsOrigin === "*"
+    ? true
+    : corsOrigin.split(",").map((origin) => origin.trim()).filter(Boolean)
 
 app.get("/", (req, res) => {
   res.status(200).json({
@@ -26,7 +31,7 @@ app.get("/api/health", (req, res) => {
 
 
 app.use(cors({
-    origin: process.env.CORS_ORIGIN,
+    origin: allowedOrigins,
     credentials: true
 }))
 app.use(express.json({limit: "16kb"}))

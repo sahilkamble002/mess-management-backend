@@ -3,6 +3,7 @@ import {ApiError} from "../utils/ApiError.js"
 import { Admin} from "../models/admin.model.js"
 import {uploadOnCloudinary} from "../utils/cloudinary.js"
 import { ApiResponse } from "../utils/ApiResponse.js";
+import { authCookieOptions } from "../utils/cookieOptions.js";
 import jwt from "jsonwebtoken"
 import mongoose from "mongoose";
 
@@ -105,15 +106,10 @@ const loginAdmin = asyncHandler(async (req, res) =>{
 
     const loggedInAdmin = await Admin.findById(admin._id).select("-password -refreshToken")
 
-    const options = {
-        httpOnly: true,
-        secure: true
-    }
-
     return res
     .status(200)
-    .cookie("accessToken", accessToken, options)
-    .cookie("refreshToken", refreshToken, options)
+    .cookie("accessToken", accessToken, authCookieOptions)
+    .cookie("refreshToken", refreshToken, authCookieOptions)
     .json(
         new ApiResponse(
             200, 
@@ -139,15 +135,10 @@ const logoutAdmin = asyncHandler(async(req, res) => {
         }
     )
 
-    const options = {
-        httpOnly: true,
-        secure: true
-    }
-
     return res
     .status(200)
-    .clearCookie("accessToken", options)
-    .clearCookie("refreshToken", options)
+    .clearCookie("accessToken", authCookieOptions)
+    .clearCookie("refreshToken", authCookieOptions)
     .json(new ApiResponse(200, {}, "Admin logged Out"))
 })
 
