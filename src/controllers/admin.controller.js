@@ -3,7 +3,6 @@ import {ApiError} from "../utils/ApiError.js"
 import { Admin} from "../models/admin.model.js"
 import {uploadOnCloudinary} from "../utils/cloudinary.js"
 import { ApiResponse } from "../utils/ApiResponse.js";
-import { getCookieOptions } from "../utils/cookieOptions.js";
 import jwt from "jsonwebtoken"
 import mongoose from "mongoose";
 
@@ -106,7 +105,10 @@ const loginAdmin = asyncHandler(async (req, res) =>{
 
     const loggedInAdmin = await Admin.findById(admin._id).select("-password -refreshToken")
 
-    const options = getCookieOptions()
+    const options = {
+        httpOnly: true,
+        secure: true
+    }
 
     return res
     .status(200)
@@ -137,7 +139,10 @@ const logoutAdmin = asyncHandler(async(req, res) => {
         }
     )
 
-    const options = getCookieOptions()
+    const options = {
+        httpOnly: true,
+        secure: true
+    }
 
     return res
     .status(200)
